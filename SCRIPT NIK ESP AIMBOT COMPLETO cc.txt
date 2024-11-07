@@ -1,0 +1,165 @@
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7yhx/kwargs_Ui_Library/main/source.lua"))()
+
+local UI = Lib:Create{
+    Theme = "Dark", -- or any other theme
+    Size = UDim2.new(0, 555, 0, 400) -- default
+ }
+ 
+ local Main = UI:Tab{
+    Name = "Niks HUB"
+ }
+ 
+ local Divider = Main:Divider{
+    Name = "Rivals"
+ }
+ 
+ local QuitDivider = Main:Divider{
+    Name = "Sair"
+ }
+
+ local ESP = Divider:Button{
+    Name = "ESP",
+    Description = "Mostra a distancia e vida de players",
+    Callback = function()
+
+        local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+function createESP(player)
+    if player.Character and player.Character:FindFirstChild("UpperTorso") then
+        local Billboard = Instance.new("BillboardGui")
+        Billboard.Adornee = player.Character:FindFirstChild("UpperTorso")
+        Billboard.Size = UDim2.new(0, 100, 0, 50)
+        Billboard.StudsOffset = Vector3.new(0, 0, 0)  -- Ajuste para o UpperTorso
+        Billboard.AlwaysOnTop = true
+
+        local NameLabel = Instance.new("TextLabel", Billboard)
+        NameLabel.Size = UDim2.new(1, 0, 0.33, 0)
+        NameLabel.BackgroundTransparency = 1
+        NameLabel.TextScaled = true
+        NameLabel.TextColor3 = player.TeamColor == LocalPlayer.TeamColor and Color3.new(0, 0, 1) or Color3.new(1, 0, 0) -- Azul para aliados, vermelho para inimigos
+        NameLabel.Text = player.Name
+
+        local HealthLabel = Instance.new("TextLabel", Billboard)
+        HealthLabel.Size = UDim2.new(1, 0, 0.33, 0)
+        HealthLabel.Position = UDim2.new(0, 0, 0.33, 0)
+        HealthLabel.BackgroundTransparency = 1
+        HealthLabel.TextScaled = true
+        HealthLabel.TextColor3 = Color3.new(1, 1, 1)
+        HealthLabel.Text = "Vida: " .. math.floor(player.Character.Humanoid.Health)
+
+        local DistanceLabel = Instance.new("TextLabel", Billboard)
+        DistanceLabel.Size = UDim2.new(1, 0, 0.33, 0)
+        DistanceLabel.Position = UDim2.new(0, 0, 0.66, 0)
+        DistanceLabel.BackgroundTransparency = 1
+        DistanceLabel.TextScaled = true
+        DistanceLabel.TextColor3 = Color3.new(1, 1, 1)
+        DistanceLabel.Text = "Distância: " .. math.floor((LocalPlayer.Character.HumanoidRootPart.Position - player.Character.UpperTorso.Position).Magnitude * 0.28) .. " metros"
+
+        player.Character.Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+            HealthLabel.Text = "Vida: " .. math.floor(player.Character.Humanoid.Health)
+        end)
+
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if player.Character and player.Character:FindFirstChild("UpperTorso") then
+                DistanceLabel.Text = "Distância: " .. math.floor((LocalPlayer.Character.HumanoidRootPart.Position - player.Character.UpperTorso.Position).Magnitude * 0.28) .. " metros"
+            end
+        end)
+
+        Billboard.Parent = player.Character.UpperTorso
+    end
+end
+
+function updateESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local billboard = player.Character:FindFirstChildWhichIsA("BillboardGui")
+            if not billboard then
+                createESP(player)
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        createESP(player)
+    end)
+end)
+
+while true do
+    updateESP()
+    wait(5) -- Atualiza a cada 5 segundos
+end
+
+    end
+ }
+
+ local aimbot = Divider:Button{
+    Name = "Aimbot",
+    Description = "Mira na cabeça da pessoa nao segure para atirar de clickes",
+    Callback = function()
+        
+        local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+local aimbotEnabled = false
+
+-- Função para encontrar o jogador mais próximo
+function getNearestPlayer()
+    local nearestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local distance = (LocalPlayer.Character.Head.Position - player.Character.Head.Position).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                nearestPlayer = player
+            end
+        end
+    end
+
+    return nearestPlayer
+end
+
+-- Função para ativar/desativar o aimbot
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.N then
+        aimbotEnabled = not aimbotEnabled
+        if aimbotEnabled then
+            print("True")
+        else
+            print("Falce")
+        end
+    end
+end)
+
+-- Loop para ajustar a mira
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        local target = getNearestPlayer()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Character.Head.Position)
+        end
+    end
+end)
+
+
+    end
+ }
+
+ local Quit = QuitDivider:Button{
+    Name = "Fecha o script.",
+    Callback = function()
+        UI:Quit{
+            Message = "Ate a proxima", -- closing message
+            Length = 1 -- seconds the closing message shows for
+        }
+    end
+ }
+ 
